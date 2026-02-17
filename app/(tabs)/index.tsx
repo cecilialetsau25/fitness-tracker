@@ -1,98 +1,177 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import * as Pedometer from "expo-sensors/build/Pedometer";
+import React, { useEffect } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store";
+import { setSteps } from "../store/stepsSlice";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function Home() {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const steps = useSelector((state: RootState) => state.steps.count);
 
-export default function HomeScreen() {
+  const STEP_GOAL = 10000;
+
+  useEffect(() => {
+    let subscription: any;
+
+    Pedometer.isAvailableAsync().then((available) => {
+      if (available) {
+        subscription = Pedometer.watchStepCount((result) => {
+          dispatch(setSteps(result.steps));
+        });
+      }
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
+  const caloriesBurned = (steps * 0.04).toFixed(1);
+  const progressPercent = Math.min((steps / STEP_GOAL) * 100, 100);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#050505" }}>
+      <ScrollView contentContainerStyle={{ padding: 24 }}>
+        {/* Header */}
+        <Text
+          style={{
+            color: "#64748b",
+            fontSize: 12,
+            fontWeight: "900",
+            letterSpacing: 2,
+            marginBottom: 4,
+          }}
+        >
+          OVERVIEW
+        </Text>
+        <Text
+          style={{
+            color: "white",
+            fontSize: 32,
+            fontWeight: "bold",
+            marginBottom: 30,
+          }}
+        >
+          Fitness <Text style={{ color: "#EAB308" }}>Tracker</Text>
+        </Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Steps Card */}
+        <View
+          style={{
+            backgroundColor: "#EAB308",
+            padding: 30,
+            borderRadius: 40,
+            marginBottom: 20,
+          }}
+        >
+          <Ionicons
+            name="footsteps"
+            size={28}
+            color="black"
+            style={{ marginBottom: 12 }}
+          />
+          <Text
+            style={{
+              color: "black",
+              fontSize: 14,
+              fontWeight: "900",
+              opacity: 0.6,
+            }}
+          >
+            STEPS TODAY
+          </Text>
+          <Text
+            style={{
+              color: "black",
+              fontSize: 64,
+              fontWeight: "bold",
+              letterSpacing: -2,
+            }}
+          >
+            {steps.toLocaleString()}
+          </Text>
+
+          {/* Progress Bar */}
+          <View
+            style={{
+              height: 8,
+              backgroundColor: "rgba(0,0,0,0.1)",
+              borderRadius: 4,
+              marginTop: 12,
+            }}
+          >
+            <View
+              style={{
+                width: `${progressPercent}%`,
+                height: "100%",
+                backgroundColor: "black",
+                borderRadius: 4,
+              }}
+            />
+          </View>
+          <Text style={{ color: "black", marginTop: 6, fontWeight: "bold" }}>
+            Goal: {STEP_GOAL.toLocaleString()} steps
+          </Text>
+        </View>
+
+        {/* Stats Row */}
+        <View style={{ flexDirection: "row", gap: 15, marginBottom: 30 }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#111",
+              padding: 20,
+              borderRadius: 30,
+              borderWidth: 1,
+              borderColor: "#222",
+              alignItems: "center",
+            }}
+          >
+            <Ionicons name="flame" size={24} color="#EAB308" />
+            <Text
+              style={{
+                color: "white",
+                fontSize: 24,
+                fontWeight: "bold",
+                marginTop: 8,
+              }}
+            >
+              {caloriesBurned}
+            </Text>
+            <Text
+              style={{ color: "#64748b", fontSize: 12, fontWeight: "bold" }}
+            >
+              KCAL BURNED
+            </Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => router.push("/explore")}
+          style={{
+            backgroundColor: "white",
+            padding: 20,
+            borderRadius: 25,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+            View Activity
+          </Text>
+          <Ionicons name="arrow-forward" size={18} color="black" />
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
