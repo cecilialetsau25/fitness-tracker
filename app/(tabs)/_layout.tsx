@@ -1,46 +1,42 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Provider } from "react-redux";
-import { store } from "../store";
 
 export default function TabLayout() {
   return (
-    <Provider store={store}>
-      <Tabs
-        screenOptions={{
-          headerShown: true,
-          tabBarActiveTintColor: "#2E86AB",
-          tabBarInactiveTintColor: "gray",
+    <Tabs
+      screenOptions={{
+        // FIX: This removes the white background bar at the top
+        headerShown: false,
+
+        // STYLING: Matching your premium black/gold theme
+        tabBarActiveTintColor: "#EAB308",
+        tabBarInactiveTintColor: "#64748b",
+        tabBarStyle: {
+          backgroundColor: "#050505", // Black background
+          borderTopColor: "#222", // Subtle dark border
+          height: 60,
+          paddingBottom: 8,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="flash" size={size} color={color} />
+          ),
         }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            title: "Activity",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="barbell-outline" size={size} color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person-outline" size={size} color={color} />
-            ),
-          }}
-        />
-      </Tabs>
-    </Provider>
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: "Activity",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="barbell" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 }

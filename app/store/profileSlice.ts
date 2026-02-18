@@ -8,7 +8,7 @@ interface ProfileState {
 }
 
 const initialState: ProfileState = {
-  name: "John Doe",
+  name: "Letsau Cecilia",
   goals: "Lose 5kg",
   height: 175,
   weight: 70,

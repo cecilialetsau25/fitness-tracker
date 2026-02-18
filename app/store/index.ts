@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import activitiesReducer from "./activitiesSlice";
 import profileReducer from "./profileSlice";
 import stepsReducer from "./stepsSlice";
+import userReducer from "./userSlice";
 
 export const store = configureStore({
   reducer: {
     activities: activitiesReducer,
     steps: stepsReducer,
     profile: profileReducer,
+    user: userReducer,
   },
 });
 

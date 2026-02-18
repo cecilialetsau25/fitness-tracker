@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Pedometer from "expo-sensors/build/Pedometer";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -17,9 +17,13 @@ export default function Home() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const steps = useSelector((state: RootState) => state.steps.count);
+  const activities = useSelector((state: RootState) => state.activities.list);
 
   const STEP_GOAL = 10000;
 
+  const [countdown, setCountdown] = useState<string>("--:--:--");
+
+  // Pedometer subscription
   useEffect(() => {
     let subscription: any;
 
@@ -33,6 +37,42 @@ export default function Home() {
 
     return () => subscription?.remove();
   }, []);
+
+  // Countdown timer logic
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      // Filter future workouts
+      const upcomingWorkouts = activities
+        .map((a) => {
+          const [h, m] = a.time.split(":").map(Number);
+          const workoutDate = new Date();
+          workoutDate.setHours(h, m, 0, 0);
+          return workoutDate > now ? { ...a, workoutDate } : null;
+        })
+        .filter(Boolean) as any[];
+
+      if (upcomingWorkouts.length > 0) {
+        // Find the next workout
+        const nextWorkout = upcomingWorkouts.reduce((prev, curr) =>
+          prev.workoutDate < curr.workoutDate ? prev : curr,
+        );
+        const diff = nextWorkout.workoutDate.getTime() - now.getTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setCountdown(
+          `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
+      } else {
+        setCountdown("--:--:--");
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activities]);
 
   const caloriesBurned = (steps * 0.04).toFixed(1);
   const progressPercent = Math.min((steps / STEP_GOAL) * 100, 100);
@@ -119,6 +159,24 @@ export default function Home() {
           </View>
           <Text style={{ color: "black", marginTop: 6, fontWeight: "bold" }}>
             Goal: {STEP_GOAL.toLocaleString()} steps
+          </Text>
+        </View>
+
+        {/* Next Workout Countdown */}
+        <View
+          style={{
+            backgroundColor: "#111",
+            padding: 20,
+            borderRadius: 25,
+            marginBottom: 20,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "#64748b", fontSize: 14, marginBottom: 6 }}>
+            NEXT WORKOUT IN
+          </Text>
+          <Text style={{ color: "#EAB308", fontSize: 28, fontWeight: "bold" }}>
+            {countdown}
           </Text>
         </View>
 

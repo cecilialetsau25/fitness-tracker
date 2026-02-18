@@ -5,13 +5,15 @@ export interface UserState {
   goals: string;
   height: number;
   weight: number;
+  calorieGoal: number;
 }
 
 const initialState: UserState = {
-  name: "John Doe",
+  name: "Letsau Cecilia",
   goals: "Lose 5kg",
   height: 175,
   weight: 70,
+  calorieGoal: 120,
 };
 
 const userSlice = createSlice({
